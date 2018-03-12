@@ -3,6 +3,8 @@ import ttk
 
 import math
 
+settings_open = False
+
 class ToggledFrame(tk.Frame):
 
     def __init__(self, parent, text="", *args, **options):
@@ -173,27 +175,69 @@ def plugin_app(parent):
     """
     Create a TK widget for the EDMC main window
     """
-    plugin_app.frame = tk.Frame(parent, relief=tk.GROOVE, borderwidth = 2)
-    plugin_app.lbl = tk.Label(plugin_app.frame, text="Bearing:", anchor=tk.W)
-    plugin_app.target_lat = tk.Entry(plugin_app.frame, width=12)
+    plugin_app.frame = tk.Frame(parent)
+    plugin_app.lbl_frm = tk.Frame(plugin_app.frame)
+    plugin_app.lbl = tk.Label(plugin_app.lbl_frm, text="Bearing:", anchor=tk.W)
+    plugin_app.target_lat = tk.Entry(plugin_app.frame, width=1)
     plugin_app.lat_label = tk.Label(plugin_app.frame, text='Lat:')
-    plugin_app.target_lon = tk.Entry(plugin_app.frame, width=12)
+    plugin_app.target_lon = tk.Entry(plugin_app.frame, width=1)
     plugin_app.lon_label = tk.Label(plugin_app.frame, text='Lon:')
-    plugin_app.bearing_frame = tk.Frame(plugin_app.frame)
+    plugin_app.bearing_frame = tk.Frame(plugin_app.lbl_frm)
+    plugin_app.set_btn = tk.Button(plugin_app.lbl_frm, text='Set', command = toggle_settings)
     plugin_app.lbl_left = tk.Label(plugin_app.bearing_frame, text='<', width=1)
     plugin_app.lbl_right = tk.Label(plugin_app.bearing_frame, text='>', width=1)
     plugin_app.bearing = tk.Label(plugin_app.bearing_frame, text='', width=6)
-    plugin_app.lbl.grid(columnspan=4, sticky=tk.W)
-    plugin_app.lat_label.grid(row=1, column=0)
-    plugin_app.target_lat.grid(row=1, column=1)
-    plugin_app.lon_label.grid(row=1, column=2)
-    plugin_app.target_lon.grid(row=1, column=3)
-    plugin_app.bearing_frame.grid(row=2, columnspan=4)
+    plugin_app.lbl_frm.grid(row=0,column=0, columnspan=4, sticky='nsew')
+    plugin_app.lbl_frm.grid_columnconfigure(0, weight=1, uniform="fred")
+    plugin_app.lbl_frm.grid_columnconfigure(1, weight=1, uniform="fred")
+    plugin_app.lbl_frm.grid_columnconfigure(2, weight=1, uniform="fred")
+    plugin_app.frame.grid_columnconfigure(1, weight=1)
+    plugin_app.frame.grid_columnconfigure(3, weight=1)
+    plugin_app.lbl.grid(sticky=tk.W)
+#    plugin_app.lat_label.grid(row=1, column=0)
+#    plugin_app.target_lat.grid(row=1, column=1, sticky = "nsew")
+#    plugin_app.lon_label.grid(row=1, column=2)
+#    plugin_app.target_lon.grid(row=1, column=3, sticky = "nsew")
+    plugin_app.bearing_frame.grid(row=0, column=1, sticky = "nsew")
     plugin_app.lbl_left.grid(row=0, column=0)
     plugin_app.bearing.grid(row=0, column=1)
     plugin_app.lbl_right.grid(row=0, column=2)
+    plugin_app.set_btn.grid(row=0, column=2, sticky="e")
     print "bearing loaded"
     return (plugin_app.frame)
+
+def toggle_settings():
+    global settings_open
+    if settings_open == False:
+        plugin_app.lat_label.grid(row=1, column=0)
+        plugin_app.target_lat.grid(row=1, column=1, sticky = "nsew")
+        plugin_app.lon_label.grid(row=1, column=2)
+        plugin_app.target_lon.grid(row=1, column=3, sticky = "nsew")
+        plugin_app.set_btn.config(text='OK')
+        settings_open = True
+    else:
+        plugin_app.lat_label.grid_forget()
+        plugin_app.target_lat.grid_forget()
+        plugin_app.lon_label.grid_forget()
+        plugin_app.target_lon.grid_forget()
+        plugin_app.set_btn.config(text='Set')
+        settings_open = False
+
+def scrub_journal_entry(cmdr, system, station, entry, state):
+    global settings_open
+    if entry['event'] == 'Location':
+        if 'Latitude' in entry:
+            plugin_app.lbl_frm.grid(row=0,column=0, columnspan=4, sticky='nsew')
+        else:
+            settings_open = True
+            toggle_settings()
+            plugin_app.lbl_frm.grid_forget()
+    elif entry['event'] == 'ApproachBody':
+        plugin_app.lbl_frm.grid(row=0,column=0, columnspan=4, sticky='nsew')
+    elif entry['event'] in ['LeaveBody','FSDJump']:
+        settings_open = True
+        toggle_settings()
+        plugin_app.lbl_frm.grid_forget()
 
 def dashboard_entry(cmdr, is_beta, entry):
     if "Latitude" in entry:
