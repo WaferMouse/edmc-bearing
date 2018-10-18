@@ -1,5 +1,5 @@
 # DEPRECATED
-Plese use my [new plugin](https://github.com/WaferMouse/L3-37) instead.
+Please use my [new plugin](https://github.com/WaferMouse/L3-37) instead.
 
 # edmc-bearing
 Simple bearing indicator for Elite: Dangerous Market Connector (EDMC)
